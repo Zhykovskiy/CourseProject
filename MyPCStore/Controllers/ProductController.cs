@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using MyPCStore.Data;
 using MyPCStore.Models;
+using MyPCStore.Models.ViewModels;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -27,48 +29,49 @@ namespace MyPCStore.Controllers
             return View(objList);
         }
 
-        //GET - CREATE
-        public IActionResult Create()
+        //GET - UPSERT
+        public IActionResult Upsert(int? id)
         {
-            return View();
+            //IEnumerable<SelectListItem> CategoryDropDown = _db.Category.Select(c => new SelectListItem
+            //{
+            //    Text = c.Name,
+            //    Value = c.Id.ToString()
+            //});  
+
+            //ViewBag.CategoryDropDown = CategoryDropDown;
+
+            //Product product = new Product();
+
+            ProductVM productVM = new ProductVM()
+            {
+                Product = new Product(),
+                CategorySelectList = _db.Category.Select(c => new SelectListItem
+                {
+                    Text = c.Name,
+                    Value = c.Id.ToString()
+                })
+            };
+
+            if (id == null)
+                return View(productVM);
+            else
+            {
+                productVM.Product = _db.Product.Find(id);
+                if (productVM.Product == null)
+                    return NotFound();
+
+                return View(productVM);
+            }
         }
 
-        //POST - CREATE
+        //POST - UPSERT
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Product obj)
+        public IActionResult Upsert(Product obj)
         {
             if (ModelState.IsValid)
             {
                 _db.Product.Add(obj);
-                _db.SaveChanges();
-                return RedirectToAction("Index");
-            }
-
-            return View(obj);
-        }
-
-        //GET - EDIT
-        public IActionResult Edit(int? id)
-        {
-            if (id == null || id == 0)
-                return NotFound();
-
-            var obj = _db.Product.Find(id);
-            if (obj == null)
-                return NotFound();
-
-            return View(obj);
-        }
-
-        //POST - EDIT
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Edit(Product obj)
-        {
-            if (ModelState.IsValid)
-            {
-                _db.Product.Update(obj);
                 _db.SaveChanges();
                 return RedirectToAction("Index");
             }
