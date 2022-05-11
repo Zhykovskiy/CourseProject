@@ -3,10 +3,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MyPCStore.Models
 {
-    public class ApplicationType
+    public class Manufacturer
     {
         [Key]
         public int Id { get; set; }
+        [Required]
         public string Name { get; set; }
     }
 }
