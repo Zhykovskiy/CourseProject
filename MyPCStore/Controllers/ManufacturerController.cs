@@ -31,9 +31,13 @@ namespace MyPCStore.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(Manufacturer obj)
         {
-            _db.Manufacturer.Add(obj);
-            _db.SaveChanges();
-            return RedirectToAction("Index");
+            if (ModelState.IsValid)
+            {
+                _db.Manufacturer.Add(obj);
+                _db.SaveChanges();
+                return RedirectToAction("Index");
+            }
+            return View(obj);
         }
 
         //GET - EDIT
