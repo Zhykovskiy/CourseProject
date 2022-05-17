@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using MyPCStore.Data;
 using MyPCStore.Models;
 using MyPCStore.Models.ViewModels;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace MyPCStore.Controllers
@@ -11,10 +14,12 @@ namespace MyPCStore.Controllers
     public class ProductController : Controller
     {
         private readonly ApplicationDbContext _db;
+        private readonly IWebHostEnvironment _webHostEnviroment;
 
-        public ProductController(ApplicationDbContext db)
+        public ProductController(ApplicationDbContext db, IWebHostEnvironment webHostEnvironment)
         {
             _db = db;
+            _webHostEnviroment = webHostEnvironment;
         }
 
         public IActionResult Index()
@@ -67,16 +72,40 @@ namespace MyPCStore.Controllers
         //POST - UPSERT
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Upsert(Product obj)
+        public IActionResult Upsert(ProductVM productVM)
         {
             if (ModelState.IsValid)
             {
-                _db.Product.Add(obj);
+                var files = HttpContext.Request.Form.Files;
+                string webRootPath = _webHostEnviroment.WebRootPath;
+
+                if(productVM.Product.Id == 0)
+                {
+                    //Creating
+                    string upload = webRootPath + WC.ImagePath;
+                    string fileName = Guid.NewGuid().ToString();
+                    string extension = Path.GetExtension(files[0].FileName);
+
+                    using (var fileStream = new FileStream(Path.Combine(upload, fileName+extension), FileMode.Create))
+                    {
+                        files[0].CopyTo(fileStream);
+                    }
+
+                    productVM.Product.Image = fileName + extension;
+
+                    _db.Product.Add(productVM.Product);
+                }
+                else
+                {
+                    //Updating
+                }
+
                 _db.SaveChanges();
+
                 return RedirectToAction("Index");
             }
 
-            return View(obj);
+            return View();
         }
 
         //GET - DELETE
