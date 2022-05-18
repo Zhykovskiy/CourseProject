@@ -81,8 +81,10 @@
                 </div>
             </div>
             <div class="col-4">
-                @* Keep this empty *@
-                <img src="@WC.ImagePath@Model.Product.Image" width="100%" style="border-radius:5px; border:1px solid #bbb"
+                @if(Model.Product.Id!= 0)
+                {
+                    <img src="@WC.ImagePath@Model.Product.Image" width="100%" style="border-radius:5px; border:1px solid #bbb" />    
+                }
             </div>
         </div>
     </div>
@@ -91,7 +93,7 @@
 
 @section Scripts{
     @{
-        <partial name="_ValidationScriptsPartial" />
+        //<partial name="_ValidationScriptsPartial" />
     }
     <script>
         $(document).ready(function() {
