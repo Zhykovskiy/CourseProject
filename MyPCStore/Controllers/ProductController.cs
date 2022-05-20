@@ -30,6 +30,7 @@ namespace MyPCStore.Controllers
             foreach (var obj in objList)
             {
                 obj.Category = _db.Category.FirstOrDefault(c => c.Id == obj.CategoryId);
+                obj.Manufacturer = _db.Manufacturer.FirstOrDefault(c => c.Id == obj.ManufacturerId);
             }
 
             return View(objList);
@@ -38,16 +39,6 @@ namespace MyPCStore.Controllers
         //GET - UPSERT
         public IActionResult Upsert(int? id)
         {
-            //IEnumerable<SelectListItem> CategoryDropDown = _db.Category.Select(c => new SelectListItem
-            //{
-            //    Text = c.Name,
-            //    Value = c.Id.ToString()
-            //});  
-
-            //ViewBag.CategoryDropDown = CategoryDropDown;
-
-            //Product product = new Product();
-
             ProductVM productVM = new ProductVM()
             {
                 Product = new Product(),
@@ -55,6 +46,11 @@ namespace MyPCStore.Controllers
                 {
                     Text = c.Name,
                     Value = c.Id.ToString()
+                }),
+                ManufacturerSelectList = _db.Manufacturer.Select(m => new SelectListItem
+                {
+                    Text = m.Name,
+                    Value = m.Id.ToString()
                 })
             };
 
@@ -80,14 +76,14 @@ namespace MyPCStore.Controllers
                 var files = HttpContext.Request.Form.Files;
                 string webRootPath = _webHostEnviroment.WebRootPath;
 
-                if(productVM.Product.Id == 0)
+                if (productVM.Product.Id == 0)
                 {
                     //Creating
                     string upload = webRootPath + WC.ImagePath;
                     string fileName = Guid.NewGuid().ToString();
                     string extension = Path.GetExtension(files[0].FileName);
 
-                    using (var fileStream = new FileStream(Path.Combine(upload, fileName+extension), FileMode.Create))
+                    using (var fileStream = new FileStream(Path.Combine(upload, fileName + extension), FileMode.Create))
                     {
                         files[0].CopyTo(fileStream);
                     }
@@ -101,7 +97,7 @@ namespace MyPCStore.Controllers
                     //Updating
                     var objFromDb = _db.Product.AsNoTracking().FirstOrDefault(p => p.Id == productVM.Product.Id);
 
-                    if(files.Count > 0)
+                    if (files.Count > 0)
                     {
                         string upload = webRootPath + WC.ImagePath;
                         string fileName = Guid.NewGuid().ToString();
@@ -138,6 +134,11 @@ namespace MyPCStore.Controllers
                 Text = c.Name,
                 Value = c.Id.ToString()
             });
+            productVM.ManufacturerSelectList = _db.Manufacturer.Select(m => new SelectListItem
+            {
+                Text = m.Name,
+                Value = m.Id.ToString()
+            });
             return View(productVM);
         }
 
@@ -147,7 +148,7 @@ namespace MyPCStore.Controllers
             if (id == null || id == 0)
                 return NotFound();
 
-            Product product = _db.Product.Include(u => u.Category).FirstOrDefault(u => u.Id == id);
+            Product product = _db.Product.Include(u => u.Category).Include(u => u.Manufacturer).FirstOrDefault(u => u.Id == id);
 
             if (product == null)
                 return NotFound();

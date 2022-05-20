@@ -22,5 +22,10 @@ namespace MyPCStore.Models
         [ForeignKey("CategoryId")]
         public virtual Category Category { get; set; }
 
+        [Display(Name = "Manufacturer")]
+        public int ManufacturerId { get; set; }
+        [ForeignKey("ManufacturerId")]
+        public virtual Manufacturer Manufacturer { get; set; }
+
     }
 }
