@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MyPCStore.Data;
 using MyPCStore.Models;
 using MyPCStore.Models.ViewModels;
+using MyPCStore.Utility;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -43,6 +45,20 @@ namespace MyPCStore.Controllers
             };
 
             return View(DetailsVM);
+        }
+
+        [HttpPost, ActionName("Details")]
+        public IActionResult DetailsPost(int id)
+        {
+            List<ShoppingCart> shoppingCartList = new List<ShoppingCart>();
+            if(HttpContext.Session.Get<List<ShoppingCart>>(WC.SessionCart) != null
+                && HttpContext.Session.Get<List<ShoppingCart>>(WC.SessionCart).Count > 0 )
+            {
+                shoppingCartList = HttpContext.Session.Get<List<ShoppingCart>>(WC.SessionCart);
+            }
+            shoppingCartList.Add(new ShoppingCart { ProductId = id });
+            HttpContext.Session.Set(WC.SessionCart, shoppingCartList);
+            return RedirectToAction(nameof(Index));
         }
 
         public IActionResult Privacy()
