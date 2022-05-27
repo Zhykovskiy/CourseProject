@@ -71,7 +71,7 @@ namespace MyPCStore.Areas.Identity.Pages.Account
 
         public async Task OnGetAsync(string returnUrl = null)
         {
-            if(!await _roleManager.RoleExistsAsync(WC.AdminRole))
+            if (!await _roleManager.RoleExistsAsync(WC.AdminRole))
             {
                 await _roleManager.CreateAsync(new IdentityRole(WC.AdminRole));
                 await _roleManager.CreateAsync(new IdentityRole(WC.CustomerRole));
@@ -87,7 +87,7 @@ namespace MyPCStore.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = Input.Email, Email = Input.Email, PhoneNumber = Input.PhoneNumber, FullName = Input.FullName};
+                var user = new ApplicationUser { UserName = Input.Email, Email = Input.Email, PhoneNumber = Input.PhoneNumber, FullName = Input.FullName };
                 var result = await _userManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)
                 {
@@ -119,7 +119,14 @@ namespace MyPCStore.Areas.Identity.Pages.Account
                     }
                     else
                     {
-                        await _signInManager.SignInAsync(user, isPersistent: false);
+                        if (!User.IsInRole(WC.AdminRole))
+                        {
+                            await _signInManager.SignInAsync(user, isPersistent: false);
+                        }
+                        else
+                        {
+                            return RedirectToAction("Index");
+                        }
                         return LocalRedirect(returnUrl);
                     }
                 }
